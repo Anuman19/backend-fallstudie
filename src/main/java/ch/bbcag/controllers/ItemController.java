@@ -11,33 +11,48 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/items")
 public class ItemController {
 
-  @Autowired ItemRepository itemRepository;
+  @Autowired private ItemRepository itemRepository;
+
+  @GetMapping(path = "{id}")
+  public Item findById(@PathVariable Integer id) {
+    return itemRepository.findById(id).orElseThrow();
+  }
+
+  @ResponseStatus(HttpStatus.CREATED)
+  @PostMapping(consumes = "application/json")
+  public void insert(@Valid @RequestBody Item newItem) {
+    itemRepository.save(newItem);
+  }
+
+  @PutMapping(consumes = "application/json")
+  public void update(@Valid @RequestBody Item item) {
+    itemRepository.save(item);
+  }
 
   @DeleteMapping("{id}")
   public void delete(@PathVariable Integer id) {
     itemRepository.deleteById(id);
   }
 
-  @GetMapping("{id}")
-  public Item findById(@PathVariable Integer id) {
-    return itemRepository.findById(id).orElseThrow();
-  }
-
-  @PostMapping(consumes = "application/json")
-  @ResponseStatus(HttpStatus.CREATED)
-  public void insert(@RequestBody Item item) {
-    itemRepository.save(item);
-  }
-
-  @PutMapping(consumes = "application/json")
-  public void update(@RequestBody Item item) {
-    itemRepository.save(item);
+  public Item findByNameAndTagName(@RequestParam(required = false) String name, String tagName) {
+    if (name.isBlank() && tagName.isBlank()) {
+      return (Item) itemRepository.findAll();
+    } else if (!name.isBlank() && !tagName.isBlank()) {
+      return (Item) itemRepository.findByNameAndTagName(name, tagName);
+    } else if (!name.isBlank()) {
+      return (Item) itemRepository.findByName(name);
+    } else {
+      return (Item) itemRepository.findByTagName(tagName);
+    }
   }
 }
