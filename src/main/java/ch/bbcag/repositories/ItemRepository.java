@@ -1,8 +1,6 @@
 package ch.bbcag.repositories;
 
 import ch.bbcag.models.Item;
-import ch.bbcag.models.Tag;
-import javax.swing.text.TabableView;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -13,7 +11,7 @@ public interface ItemRepository extends CrudRepository<Item, Integer> {
   Iterable<Item> findByName(@Param("name") String name);
 
   @Query("SELECT i from Item i JOIN i.linkedTags t WHERE t.name LIKE CONCAT('%', :tagName, '%')")
-  Iterable<Item> findByTagName(@Param("name") String tagName);
+  Iterable<Item> findByTagName(@Param("tagName") String tagName);
 
   @Query(
       "SELECT i from Item i JOIN i.linkedTags t WHERE t.name LIKE CONCAT('%', :tagName, '%') AND  i.name LIKE CONCAT('%', :name, '%')")

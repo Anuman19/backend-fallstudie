@@ -46,4 +46,12 @@ public class Tag {
   public void setName(String name) {
     this.name = name;
   }
+
+  public Set<Item> getLinkedItems() {
+    return linkedItems;
+  }
+
+  public void setLinkedItems(Set<Item> linkedItems) {
+    this.linkedItems = linkedItems;
+  }
 }

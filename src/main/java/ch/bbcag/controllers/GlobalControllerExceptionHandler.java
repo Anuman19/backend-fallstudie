@@ -27,6 +27,7 @@ public class GlobalControllerExceptionHandler {
 
     @ExceptionHandler({ResponseStatusException.class})
     public ResponseEntity<String> handleResponseStatusException(ResponseStatusException ex) {
+
         return new ResponseEntity<>(ex.getMessage(), ex.getStatus());
     }
 
