@@ -1,8 +1,9 @@
 package ch.bbcag.controllers;
 
-import ch.bbcag.models.Item;
-import ch.bbcag.repositories.ItemRepository;
+import ch.bbcag.models.Tag;
+import ch.bbcag.repositories.TagRepository;
 import java.util.NoSuchElementException;
+import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -17,66 +18,59 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.validation.Valid;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("/items")
-public class ItemController {
+@RequestMapping("/tags")
+public class TagController {
 
-  @Autowired private ItemRepository itemRepository;
+  @Autowired private TagRepository tagRepository;
 
-  @GetMapping(path = "{id}")
-  public Item findById(@PathVariable Integer id) {
-    try {
-      return itemRepository.findById(id).orElseThrow();
-    } catch (NoSuchElementException e) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found!");
-    }
+  @GetMapping
+  public Iterable<Tag> findByName(@RequestParam(required = false) String name) {
 
-  }
-
-  @ResponseStatus(HttpStatus.CREATED)
-  @PostMapping(consumes = "application/json")
-  public void insert(@Valid @RequestBody Item newItem) {
-
-    try {
-      itemRepository.save(newItem);
-    } catch (DataIntegrityViolationException e) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT);
-    }
-  }
-
-  @PutMapping(consumes = "application/json")
-  public void update(@Valid @RequestBody Item item) {
-    try {
-      itemRepository.save(item);
-    } catch (DataIntegrityViolationException e) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT);
+    if (name == null) {
+      return tagRepository.findAll();
+    } else {
+      return tagRepository.findByName(name);
     }
   }
 
   @DeleteMapping("{id}")
   public void delete(@PathVariable Integer id) {
     try {
-      itemRepository.deleteById(id);
+      tagRepository.deleteById(id);
     } catch (EmptyResultDataAccessException e) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found!");
     }
   }
 
-  @GetMapping
-  public Item findByNameAndTagName(
-      @RequestParam(required = false) String name, @RequestParam(required = false) String tagName) {
-    if (name.isBlank() && tagName.isBlank()) {
-      return (Item) itemRepository.findAll();
-    } else if (!name.isBlank() && !tagName.isBlank()) {
-      return (Item) itemRepository.findByNameAndTagName(name, tagName);
-    } else if (!name.isBlank()) {
-      return (Item) itemRepository.findByName(name);
-    } else {
-      return (Item) itemRepository.findByTagName(tagName);
+  @GetMapping(path = "{id}")
+  public Tag findById(@PathVariable Integer id) {
+    try {
+      return tagRepository.findById(id).orElseThrow();
+    } catch (NoSuchElementException e) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found!");
+    }
+  }
+
+  @ResponseStatus(HttpStatus.CREATED)
+  @PostMapping(consumes = "application/json")
+  public void insert(@Valid @RequestBody Tag newTag) {
+
+    try {
+      tagRepository.save(newTag);
+    } catch (DataIntegrityViolationException e) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT);
+    }
+  }
+
+  @PutMapping(consumes = "application/json")
+  public void update(@Valid @RequestBody Tag tag) {
+    try {
+      tagRepository.save(tag);
+    } catch (DataIntegrityViolationException e) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT);
     }
   }
 }
