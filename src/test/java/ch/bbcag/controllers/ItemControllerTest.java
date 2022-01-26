@@ -2,7 +2,6 @@ package ch.bbcag.controllers;
 
 import static ch.bbcag.utils.TestDataUtil.getTestItem;
 import static ch.bbcag.utils.TestDataUtil.getTestItems;
-import static ch.bbcag.utils.TestDataUtil;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;

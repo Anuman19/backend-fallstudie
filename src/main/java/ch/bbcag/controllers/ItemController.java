@@ -30,11 +30,11 @@ public class ItemController {
   @GetMapping(path = "{id}")
   public Item findById(@PathVariable Integer id) {
     try {
-      itemRepository.findById(id);
+      return itemRepository.findById(id).orElseThrow();
     } catch (NoSuchElementException e) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found!");
     }
-    return itemRepository.findById(id).orElseThrow();
+
   }
 
   @ResponseStatus(HttpStatus.CREATED)
@@ -62,7 +62,7 @@ public class ItemController {
     try {
       itemRepository.deleteById(id);
     } catch (EmptyResultDataAccessException e) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found!");
     }
   }
 
