@@ -2,7 +2,14 @@ package ch.bbcag.controllers;
 
 import ch.bbcag.models.Item;
 import ch.bbcag.repositories.ItemRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.util.NoSuchElementException;
+import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -17,8 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.validation.Valid;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
@@ -28,18 +33,61 @@ public class ItemController {
   @Autowired private ItemRepository itemRepository;
 
   @GetMapping(path = "{id}")
-  public Item findById(@PathVariable Integer id) {
+  @Operation(summary = "Find items with a given id.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Item(s) found",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = Item.class))
+            }),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Item not found.",
+            content = {@Content(mediaType = "application/json")})
+      })
+  public Item findById(@Parameter(description = "Item ID to search") @PathVariable Integer id) {
     try {
       return itemRepository.findById(id).orElseThrow();
     } catch (NoSuchElementException e) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found!");
     }
-
   }
 
   @ResponseStatus(HttpStatus.CREATED)
   @PostMapping(consumes = "application/json")
-  public void insert(@Valid @RequestBody Item newItem) {
+  @Operation(summary = "Insert a Item.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Item(s) created.",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = Item.class))
+            }),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad request.",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = Item.class))
+            }),
+        @ApiResponse(
+            responseCode = "409",
+            description = "Conflict",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = Item.class))
+            })
+      })
+  public void insert(@Parameter(description = "Item to insert.") @Valid @RequestBody Item newItem) {
 
     try {
       itemRepository.save(newItem);
@@ -49,7 +97,23 @@ public class ItemController {
   }
 
   @PutMapping(consumes = "application/json")
-  public void update(@Valid @RequestBody Item item) {
+  @Operation(summary = "Update given Item")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Item(s) found",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = Item.class))
+            }),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Item not found.",
+            content = {@Content(mediaType = "application/json")})
+      })
+  public void update(@Parameter(description = "Item to update.") @Valid @RequestBody Item item) {
     try {
       itemRepository.save(item);
     } catch (DataIntegrityViolationException e) {
@@ -58,7 +122,23 @@ public class ItemController {
   }
 
   @DeleteMapping("{id}")
-  public void delete(@PathVariable Integer id) {
+  @Operation(summary = "Delete Item by ID.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Item(s) found",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = Item.class))
+            }),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Item not found.",
+            content = {@Content(mediaType = "application/json")})
+      })
+  public void delete(@Parameter(description = "Delete an Item by ID.") @PathVariable Integer id) {
     try {
       itemRepository.deleteById(id);
     } catch (EmptyResultDataAccessException e) {
@@ -67,6 +147,18 @@ public class ItemController {
   }
 
   @GetMapping
+  @Operation(summary = "Find Item with a given name. If no name given, all Items are returned.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Item(s) found",
+            content = {
+              @Content(
+                  mediaType = "application/json",
+                  schema = @Schema(implementation = Item.class))
+            })
+      })
   public Item findByNameAndTagName(
       @RequestParam(required = false) String name, @RequestParam(required = false) String tagName) {
     if (name.isBlank() && tagName.isBlank()) {

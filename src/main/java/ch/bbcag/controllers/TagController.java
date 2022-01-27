@@ -2,6 +2,12 @@ package ch.bbcag.controllers;
 
 import ch.bbcag.models.Tag;
 import ch.bbcag.repositories.TagRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.util.NoSuchElementException;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +28,30 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/tags")
+@ApiResponses(
+    value = {
+      @ApiResponse(
+          responseCode = "403",
+          description = "You do not have permission to do this. Please use /login first.",
+          content = {@Content(mediaType = "application/json")})
+    })
 public class TagController {
 
   @Autowired private TagRepository tagRepository;
 
   @GetMapping
-  public Iterable<Tag> findByName(@RequestParam(required = false) String name) {
+  @Operation(summary = "Find tags with a given name. If no name given, all tags are returned.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Tag(s) found",
+            content = {
+              @Content(mediaType = "application/json", schema = @Schema(implementation = Tag.class))
+            })
+      })
+  public Iterable<Tag> findByName(
+      @Parameter(description = "Tag name to search") @RequestParam(required = false) String name) {
 
     if (name == null) {
       return tagRepository.findAll();
@@ -37,7 +61,23 @@ public class TagController {
   }
 
   @DeleteMapping("{id}")
-  public void delete(@PathVariable Integer id) {
+  @Operation(summary = "Delete Tag by ID.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Tag(s) found",
+            content = {
+              @Content(mediaType = "application/json", schema = @Schema(implementation = Tag.class))
+            }),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Tag not found.",
+            content = {
+              @Content(mediaType = "application/json")
+            })
+      })
+  public void delete(@Parameter(description = "Tag ID to delete.") @PathVariable Integer id) {
     try {
       tagRepository.deleteById(id);
     } catch (EmptyResultDataAccessException e) {
@@ -46,7 +86,23 @@ public class TagController {
   }
 
   @GetMapping(path = "{id}")
-  public Tag findById(@PathVariable Integer id) {
+  @Operation(summary = "Find tags with a given id.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Tag(s) found",
+            content = {
+              @Content(mediaType = "application/json", schema = @Schema(implementation = Tag.class))
+            }),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Tag not found.",
+            content = {
+              @Content(mediaType = "application/json")
+            })
+      })
+  public Tag findById(@Parameter(description = "Tag ID to search") @PathVariable Integer id) {
     try {
       return tagRepository.findById(id).orElseThrow();
     } catch (NoSuchElementException e) {
@@ -56,7 +112,29 @@ public class TagController {
 
   @ResponseStatus(HttpStatus.CREATED)
   @PostMapping(consumes = "application/json")
-  public void insert(@Valid @RequestBody Tag newTag) {
+  @Operation(summary = "Insert a Tag.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Tag(s) created.",
+            content = {
+              @Content(mediaType = "application/json", schema = @Schema(implementation = Tag.class))
+            }),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad request.",
+            content = {
+              @Content(mediaType = "application/json")
+            }),
+        @ApiResponse(
+            responseCode = "409",
+            description = "Conflict",
+            content = {
+              @Content(mediaType = "application/json")
+            })
+      })
+  public void insert(@Parameter(description = "New Tag.") @Valid @RequestBody Tag newTag) {
 
     try {
       tagRepository.save(newTag);
@@ -66,7 +144,23 @@ public class TagController {
   }
 
   @PutMapping(consumes = "application/json")
-  public void update(@Valid @RequestBody Tag tag) {
+  @Operation(summary = "Update given Tag")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Tag(s) found",
+            content = {
+              @Content(mediaType = "application/json", schema = @Schema(implementation = Tag.class))
+            }),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Tag not found.",
+            content = {
+              @Content(mediaType = "application/json")
+            })
+      })
+  public void update(@Parameter(description = "Tag to be updated.") @Valid @RequestBody Tag tag) {
     try {
       tagRepository.save(tag);
     } catch (DataIntegrityViolationException e) {
